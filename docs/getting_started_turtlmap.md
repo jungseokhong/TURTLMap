@@ -4,6 +4,7 @@ You can find the data [on this Google Drive Link](https://drive.google.com/drive
 1. `logX.bag`: this contains all the information that is collected on the BR2 computer, including the **DVL**, **barometer**, and their static transforms.
 2. `logX_imu.bag`: this contains the information from the **3DM-GX5-25 IMU**, which we use for the factor graph.
 3. `logX_zed-001.bag`: this contains the stereo images, IMU and registered pointcloud from the on-board Zed-Mini camera
+4. `stamped_groundtruth.txt`: this contains the groundtruth information that is used for evaluation purposes.
 
 
 ### Running for Each Log

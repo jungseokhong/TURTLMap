@@ -20,7 +20,7 @@ As can be seen, for each log, we provide three separate ros bags, which is due t
 Please also check [this issue](https://github.com/umfieldrobotics/TURTLMap/issues/1) to learn more about how we handle different frame rates of the sensors.
 
 ## Use
-We have embeeded the playback of the logs in the launch file.
+We have embeeded the playback of the logs in the launch file. We also provide a ROS service inside TURTLMap to save the estimated poses into a `txt` file that can be used for evaluation. Please refer to `save_trajectory.srv` in the package for more information.
 
 ## Ground Truth
-We proviode the ground truth of the robot pose in the logs. We collect the ground truth by using the onsite motion capture system. We have converted the mocap log to text files with timestamp and robot pose that can be directly used with the evaluation scripts.
+We proviode the ground truth of the robot pose in the logs. We collect the ground truth by using the onsite motion capture system. We have converted the mocap log to text files with timestamp and robot pose that can be directly used with the evaluation scripts. In the folder for each log, there is a file named `stamped_groundtruth.txt` that contains the ground truth information. We use the `rpg_trajectory_evaluation` package to evaluate the estimated trajectory against the ground truth. Please refer to the package [repository](https://github.com/uzh-rpg/rpg_trajectory_evaluation) for the detailed usage.
