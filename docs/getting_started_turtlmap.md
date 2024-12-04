@@ -8,7 +8,7 @@ You can find the data [on this Google Drive Link](https://drive.google.com/drive
 
 
 ### Running for Each Log
-Use the `launch/turtlmap.launch file`.
+Use the `launch/turtlmap.launch` file.
 - For log1, set the start flag `-s` in the rosbag player node as **20**
 - For log2, set the start flag `-s` in the rosbag player node as **15**
 Simply run:
