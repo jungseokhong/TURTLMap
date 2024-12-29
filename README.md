@@ -30,10 +30,12 @@ For instructions on how to extend TURTLMap to your own robot, please refer to th
 ## Citation
 Please cite our paper if you find TURTLMap useful for your research:
 ```bibtex
-@article{song2024turtlmap,
+@inproceedings{song2024turtlmap,
   title={TURTLMap: Real-time Localization and Dense Mapping of Low-texture Underwater Environments with a Low-cost Unmanned Underwater Vehicle},
-  author={Song, Jingyu and Bagoren, Onur and Andigani, Razan and Sethuraman, Advaith Venkatramanan and Skinner, Katherine},
-  journal={arXiv preprint arXiv:2408.01569},
-  year={2024}
+  author={Song, Jingyu and Bagoren, Onur and Andigani, Razan and Sethuraman, Advaith and Skinner, Katherine A},
+  booktitle={2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={1191--1198},
+  year={2024},
+  organization={IEEE}
 }
 ```
