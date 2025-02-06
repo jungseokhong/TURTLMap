@@ -35,7 +35,7 @@
     <!-- Static transform between world and camera -->
     <node name="acoustics_visualizer" pkg="bluerov_visualizer" type="visualize_acoustics.py" output="screen" />
 
-    <node name="voxblox_node" pkg="voxblox_ros" type="tsdf_server" output="screen"
+    <!-- <node name="voxblox_node" pkg="voxblox_ros" type="tsdf_server" output="screen"
         args="-alsologtostderr" clear_params="true">
         <remap from="pointcloud" to="/zedm/zed_node/point_cloud/cloud_registered" />
         <param name="tsdf_voxel_size" value="$(arg voxel_size)" />
@@ -53,6 +53,6 @@
         <rosparam file="$(find voxblox_ros)/cfg/cow_and_lady.yaml" />
         <param name="mesh_filename" value="$(find voxblox_ros)/mesh_results/$(anon basement).ply" />
         <param name="world_frame" value="NED_imu" />
-    </node>
+    </node> -->
 
 </launch>
