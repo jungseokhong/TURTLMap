@@ -1,0 +1,16 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:include filename="$(find turtlmap)/model/misc.xacro"/>
+
+    <xacro:macro name="dvl_frames" params="parent_link dvl_name rpy xyz">
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/${dvl_name}_base" rpy="${rpy}" xyz="${xyz}"/>
+
+        <xacro:fixed_frame parent_link="${namespace}/${dvl_name}_base" child_link="${namespace}/${dvl_name}_altitude" rpy="0 -1.5708 0" xyz="0 0 0"/>
+
+
+        <!-- Transducer angle of 0.3927 rad, but I need x axes pointing out -->
+        <xacro:fixed_frame parent_link="${namespace}/${dvl_name}_base" child_link="${namespace}/${dvl_name}_beam_1" rpy="0 -1.1781 2.356" xyz="-0.01386 0.01386 0.001929"/>
+        <xacro:fixed_frame parent_link="${namespace}/${dvl_name}_base" child_link="${namespace}/${dvl_name}_beam_2" rpy="0 -1.1781 -2.356" xyz="-0.01386 -0.01386 0.001929"/>
+        <xacro:fixed_frame parent_link="${namespace}/${dvl_name}_base" child_link="${namespace}/${dvl_name}_beam_3" rpy="0 -1.1781 -0.785" xyz="0.01386 -0.01386 0.001929"/>
+        <xacro:fixed_frame parent_link="${namespace}/${dvl_name}_base" child_link="${namespace}/${dvl_name}_beam_4" rpy="0 -1.1781 0.785" xyz="0.01386 0.01386 0.001929"/>
+    </xacro:macro>
+</robot>

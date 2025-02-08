@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <arg name="bag_dirs" default="/home/user/data/turtl/Log2"/>
-    <arg name="bag1" default="$(arg bag_dirs)/log2.bag"/>
-    <arg name="bag2" default="$(arg bag_dirs)/log2_imu.bag"/>
-    <arg name="bag3" default="$(arg bag_dirs)/log2_zed.bag"/>
-    <arg name="start_time" default="15"/>
+    <arg name="bag_dirs" default="/home/user/data/usvi/yawzi"/>
+    <arg name="bag1" default="$(arg bag_dirs)/warpauv_3_yawzi_orin3_1969-12-31-19-09-21.bag"/>
   
     <!-- rosbag play node with the arguments -->
     <node pkg="rosbag" type="play" name="rosbag_play" 
-          args="$(arg bag1) $(arg bag2) $(arg bag3) --clock /tf:=/tf_old /tf_static:=/tf_static_old -s $(arg start_time)" 
+          args="$(arg bag1) --clock /tf:=/tf_old /tf_static:=/tf_static_old" 
     output="log"/>
 
     <!-- set sim time to true -->
@@ -17,14 +14,14 @@
     <arg name="voxel_size" default="0.05" />
 
     <node name="turtlmap" pkg="turtlmap" type="turtlmap_node" output="screen">
-        <param name="config_file" value="$(find turtlmap)/param/br2config.yaml" />
+        <param name="config_file" value="$(find turtlmap)/param/warpauv3config.yaml" />
     </node>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find bluerov_visualizer)/viz.rviz" />
-
-    <arg name="model" default="$(find bluerov_visualizer)/bluerov_model/BlueRov2_UI2024.urdf.xacro" />
-
-    <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find bluerov_visualizer)/viz.rviz" /> -->
+    <node name="rviz" pkg="rviz" type="rviz"/>
+    <arg name="model" default="$(find turtlmap)/model/warpauv.xacro" />
+    <arg name="robot_name" default="warpauv_3" />
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model) namespace:=$(arg robot_name)" />
     <node
         name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
         respawn="true" output="screen" />
@@ -33,7 +30,7 @@
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_world" args="0 0 0 1 0 0 0 map NED_imu" />
 
     <!-- Static transform between world and camera -->
-    <node name="acoustics_visualizer" pkg="bluerov_visualizer" type="visualize_acoustics.py" output="screen" />
+    <!-- <node name="acoustics_visualizer" pkg="bluerov_visualizer" type="visualize_acoustics.py" output="screen" /> -->
 
     <!-- <node name="voxblox_node" pkg="voxblox_ros" type="tsdf_server" output="screen"
         args="-alsologtostderr" clear_params="true">

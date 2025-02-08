@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+
+<!-- Base file for warpauv.  Uses structure from UUVSIM -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="warpauv_base" params="namespace">
+        <!-- Input arguments -->
+        <!--<xacro:arg name="namespace" default="warpauv"/>-->
+
+        <!-- Define a few things -->
+        <xacro:property name="mass" value="22.6796"/>
+        <xacro:property name="visual_mesh_file" value="package://warpauv_control/description/warpauv.dae"/>
+        <!--<xacro:property name="namespace" value="$(arg namespace)"/>-->
+
+        <xacro:include filename="$(find turtlmap)/model/BlueROV_Echosounder_transforms.xacro"/>
+        <xacro:include filename="$(find turtlmap)/model/dvl_macro.xacro"/>
+        <xacro:include filename="$(find turtlmap)/model/misc.xacro"/>
+
+        <!-- Create the warpauv base link-->
+        <!-- Because UUVSIM does this, and because I want multi robot stuff, we call it warpauv/base_link -->
+        <!-- Instead of normal base_link -->
+        <!-- But you can rename the robot from the launch file! -->
+        <link name="${namespace}/base_link">
+            <inertial>
+                <mass value="${mass}"/>
+                <origin xyz="-0.181 0.0 -0.125" rpy="0 0 0"/>
+                <inertia ixx="0.2" ixy="0" ixz="0" iyy="0.4" iyz="0" izz="0.5"/>
+            </inertial>
+
+            <!-- visual mesh -->
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="${visual_mesh_file}" scale="1 1 1"/>
+                </geometry>
+            </visual>
+
+            <!-- collision mesh -->
+            <collision>
+                <origin xyz="-0.11 0 -0.1" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.64 0.4 0.21"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <!-- IMU link -->
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/imu_link" rpy="0 0 0" xyz="-0.174 0.02 -0.054"/>
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/vectornav_imu" rpy="3.14159 0 0" xyz="-0.4 0 -0.01"/>
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/navigator_imu" rpy="0 0 1.5708" xyz="-0.3 0 -0.05"/>
+
+        <!-- GPS -->
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/gps" rpy="0 0 0" xyz="-0.4 0 0.17"/>
+
+        <!--Front housing link -->
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/front_housing_link" rpy="0 0 0" xyz="0.08203 0 -0.13849"/>
+
+        <!-- Camera link -->
+        <!-- TODO: move this into camera launcher instead, and include the T265 base frame, not just left_aligned -->
+        <!-- Camera center link frames are x-forward, y-left, z-up -->
+        <!--
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/forward_camera_center_link" rpy="0 0.785398 0" xyz="0.17 0.0 -0.16"/>
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/downward_camera_center_link" rpy="0 1.5708 0" xyz="0.11 0 -0.17"/>
+        <xacro:fixed_frame parent_link="${namespace}/forward_camera_center_link" child_link="${namespace}/t265_intermediate" rpy="0 1.570796 0" xyz="0.0 0.0 0.0"/>
+        <xacro:fixed_frame parent_link="${namespace}/t265_intermediate" child_link="${namespace}/t265_forward" rpy="0 0 -1.570796" xyz="0.0 0.0 0.0"/>
+        -->
+
+        <!-- Because each echosounder has a root and a sensor frame, I wrote a short macro for them and put it in a
+        different file-->
+        <xacro:echosounder_transforms parent_link_name="${namespace}/base_link" echosounder_name="left_echosounder" rpy="0 1.5708 0" xyz=".1238 .1524 -.1686"/>
+        <xacro:echosounder_transforms parent_link_name="${namespace}/base_link" echosounder_name="right_echosounder" rpy="0 0.785398 0" xyz=".1295 -.1524  -.1559"/>
+
+        <!-- DVL link -->
+        <xacro:dvl_frames parent_link="${namespace}/base_link" dvl_name="waterlinked_dvl" rpy="3.14159 0 1.5708" xyz="0.0445 0 -0.2076"/>
+
+        <!-- USBL link -->
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/USBL" rpy="0 0 0" xyz="-.278 0 .0762"/>
+
+        <!-- Sidescan sonars -->
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/sss_right" rpy="${0.5*pi} ${0.785398} ${-0.5*pi}" xyz="-0.144 -0.19 -0.185"/>
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/sss_left" rpy="${0.5*pi} ${0.785398} ${0.5*pi}" xyz="-0.144 0.19 -0.185"/>
+    </xacro:macro>
+</robot>
