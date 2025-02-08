@@ -1,0 +1,14 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:include filename="$(find turtlmap)/model/misc.xacro"/>
+
+    <!-- Sets up the frames for an echosounder -->
+    <!-- The origin frame makes it easier to measure the position in SolidWorks, as it is the origin of the echosounder
+     cad model -->
+    <xacro:macro name="echosounder_transforms" params="parent_link_name echosounder_name rpy xyz">
+        <!-- Create echosounder link -->
+        <xacro:fixed_frame parent_link="${namespace}/base_link" child_link="${namespace}/${echosounder_name}_origin" rpy="${rpy}" xyz="${xyz}"/>
+
+        <!-- Create echosounder sensor link -->
+        <xacro:fixed_frame parent_link="${namespace}/${echosounder_name}_origin" child_link="${namespace}/${echosounder_name}_sensor" rpy="0 0 0" xyz="0.014 0 0"/>
+    </xacro:macro>
+</robot>

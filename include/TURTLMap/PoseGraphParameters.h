@@ -59,6 +59,7 @@ namespace pose_graph_backend
         Eigen::Matrix4d T_SRc;  // right cam to imu
         Eigen::Matrix4d T_SBa;  // barometer to imu
         Eigen::Matrix4d T_W_WD; // world to dvl world
+        Eigen::Matrix4d T_SI;   // body to imu
     };
 
     struct OptimizationParameters

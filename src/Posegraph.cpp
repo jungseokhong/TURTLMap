@@ -41,6 +41,14 @@ namespace pose_graph_backend
                 extrinsics.T_SD(i, j) = T_SD_flat[i * 4 + j];
             }
         }
+        std::vector<double> T_SI = config["dvl_params"]["T_SI"].as<std::vector<double>>();
+        for (int i = 0; i < 4; ++i)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                extrinsics.T_SI(i, j) = T_SI[i * 4 + j];
+            }
+        }
         std::vector<double> T_SSo_flat = config["sonar_params"]["T_SSo"].as<std::vector<double>>();
         for (int i = 0; i < 4; ++i)
         {
@@ -853,6 +861,7 @@ namespace pose_graph_backend
         T_SB_ = params_->extrinsics_.T_BS;
 
         T_W_WD_ = params_->extrinsics_.T_W_WD;
+        T_SI_ = params_->extrinsics_.T_SI;
     }
 
     void AUVPoseGraph::addEstimateSimple(double dt, double noise)

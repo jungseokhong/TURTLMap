@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<robot name="warpauv" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="$(find turtlmap)/model/warpauv_base.xacro"/>
+    <xacro:arg name="namespace" default="warpauv"/>
+
+    <xacro:warpauv_base namespace="$(arg namespace)"/>
+
+    <!-- <xacro:warpauv_ff_front_housing_zedm namespace="$(arg namespace)"/> -->
+
+</robot>
