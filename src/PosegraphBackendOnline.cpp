@@ -199,6 +199,7 @@ namespace pose_graph_backend
             // new_kf_flag_ = false;
             // add different factors to the graph
             if (posegraph_->index_ < 10000)
+            // TODO: check if this is the right way to do it
             posegraph_->addBarometricFactor(posegraph_->getDepthMeasurement(), 0.005, posegraph_->index_);
 
             // add IMU factor
@@ -410,6 +411,7 @@ namespace pose_graph_backend
             // only keep the rotation measurement from IMU
             
             // get IMU msg
+            // TODO: probably put the transformation in here (original transform is T_map_imu, probably need to put T_imu_body?)
             gtsam::Vector3 imu_acc = gtsam::Vector3(imu_msg->linear_acceleration.x, imu_msg->linear_acceleration.y, imu_msg->linear_acceleration.z);
             gtsam::Vector3 imu_gyro = gtsam::Vector3(imu_msg->angular_velocity.x, imu_msg->angular_velocity.y, imu_msg->angular_velocity.z);
 
@@ -449,8 +451,9 @@ namespace pose_graph_backend
                 // also publish the transform
                 // - Translation: [0.052, 0.006, 0.242]
                 // - Rotation: in Quaternion [-0.495, 0.498, -0.503, 0.503]        
-                gtsam::Pose3 T_sensor_zed = gtsam::Pose3(gtsam::Rot3(-0.495, 0.498, -0.503, 0.503), gtsam::Point3(0.052, 0.006, 0.242));
-                gtsam::Pose3 latest_publish_pose_base_link = latest_pose * T_sensor_zed.inverse();
+                // gtsam::Pose3 T_sensor_zed = gtsam::Pose3(gtsam::Rot3(-0.495, 0.498, -0.503, 0.503), gtsam::Point3(0.052, 0.006, 0.242));
+                gtsam::Pose3 T_body_imu = gtsam::Pose3(posegraph_->T_BS_);
+                gtsam::Pose3 latest_publish_pose_base_link = latest_pose * T_body_imu.inverse();
                 geometry_msgs::TransformStamped pose_tf_msg;
                 pose_tf_msg.header.stamp = imu_msg->header.stamp;
                 pose_tf_msg.header.frame_id = "NED_imu";
