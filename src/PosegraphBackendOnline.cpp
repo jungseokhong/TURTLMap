@@ -124,13 +124,16 @@ namespace pose_graph_backend
         imu_subscriber_ = nh_.subscribe(imu_subscriber_options);
 
         // DVL subscription
-        dvl_subscriber_ = nh_.subscribe(posegraph_->params_->sensor_topics_.dvl_topic, 1000, &PosegraphBackendOnline::callbackDVL, this);
+        dvl_subscriber_ = nh_.subscribe(posegraph_->params_->sensor_topics_.dvl_topic, 1000,
+                                   &PosegraphBackendOnline::callbackDVL, this);
 
         // Barometer subscription
-        baro_subscriber_ = nh_.subscribe(posegraph_->params_->sensor_topics_.baro_topic, 1000, &PosegraphBackendOnline::callbackBaro, this);
+        baro_subscriber_ = nh_.subscribe(posegraph_->params_->sensor_topics_.baro_topic, 1000,
+                                   &PosegraphBackendOnline::callbackBaro, this);
 
         // DVL local subscription
-        dvl_local_subscriber_ = nh_.subscribe(posegraph_->params_->sensor_topics_.dvl_local_position_topic, 1000, &PosegraphBackendOnline::callbackDVLLocal, this);
+        // TODO: check if this is the right way to do it
+        // dvl_local_subscriber_ = nh_.subscribe(posegraph_->params_->sensor_topics_.dvl_local_position_topic, 1000, &PosegraphBackendOnline::callbackDVLLocal, this);
 
         // async spinners
         // For Orin nano there are 6 cores
@@ -470,8 +473,7 @@ namespace pose_graph_backend
         
     }
 
-    // void PosegraphBackendOnline::callbackDVL(const geometry_msgs::TwistWithCovarianceStampedConstPtr& dvl_msg)
-    void PosegraphBackendOnline::callbackDVL(const waterlinked_a50_ros_driver::DVLConstPtr& dvl_msg)
+    void PosegraphBackendOnline::callbackDVL(const geometry_msgs::TwistWithCovarianceStampedConstPtr& dvl_msg)
     {
         if (is_rot_initialized_ == false)
         {
@@ -484,9 +486,9 @@ namespace pose_graph_backend
         double dt_dvl;
         double dvl_current_time = dvl_msg->header.stamp.toSec();
         gtsam::Vector3 dvl_vel = posegraph_->T_SD_.block(0, 0, 3, 3) * 
-                gtsam::Vector3(dvl_msg->velocity.x, dvl_msg->velocity.y, dvl_msg->velocity.z);
-        double fom = dvl_msg->fom;
-        bool is_valid = dvl_msg->velocity_valid;
+                gtsam::Vector3(dvl_msg->twist.twist.linear.x, dvl_msg->twist.twist.linear.y, dvl_msg->twist.twist.linear.z);
+        // double fom = dvl_msg->fom;
+        // bool is_valid = dvl_msg->velocity_valid;
 
         if (prev_dvl_time_ == 0.0)
         {
@@ -516,8 +518,8 @@ namespace pose_graph_backend
         
         // gtsam::Vector3 dvl_vel(dvl_msg->twist.twist.linear.x, dvl_msg->twist.twist.linear.y, dvl_msg->twist.twist.linear.z);
         // rotate the velocity to sensor frame
-        if (fom >= posegraph_->params_->dvl_fom_threshold_ && !is_valid)
-        // if (false)
+        // if (fom >= posegraph_->params_->dvl_fom_threshold_ && !is_valid)
+        if (false) // TODO: not using this for now.
         {
             // use pim_dvl_ to integrate the velocity
             gtsam::NavState imu_prop_state = pim_dvl_->predict(gtsam::NavState(latest_dvl_pose_,
@@ -557,7 +559,7 @@ namespace pose_graph_backend
             
             pim_dvl_->resetIntegration(); // only reset the 
         }
-        posegraph_->current_dvl_foms_.push_back(fom*4); // multiply by 4 to get the actual fom
+        // posegraph_->current_dvl_foms_.push_back(fom*4); // multiply by 4 to get the actual fom
         posegraph_->imu_rot_list_.push_back(imu_latest_rot_);
         prev_dvl_time_ = dvl_current_time;
         
@@ -606,8 +608,10 @@ namespace pose_graph_backend
         // also publish the transform
         // - Translation: [0.052, 0.006, 0.242]
         // - Rotation: in Quaternion [-0.495, 0.498, -0.503, 0.503]        
-        gtsam::Pose3 T_sensor_zed = gtsam::Pose3(gtsam::Rot3(-0.495, 0.498, -0.503, 0.503), gtsam::Point3(0.052, 0.006, 0.242));
-        gtsam::Pose3 latest_publish_pose_base_link = latest_publish_pose_ * T_sensor_zed.inverse();
+        // gtsam::Pose3 T_sensor_zed = gtsam::Pose3(gtsam::Rot3(-0.495, 0.498, -0.503, 0.503), gtsam::Point3(0.052, 0.006, 0.242));
+        gtsam::Pose3 T_body_imu = gtsam::Pose3(posegraph_->T_BS_);
+        // gtsam::Pose3 latest_publish_pose_base_link = latest_publish_pose_ * T_sensor_zed.inverse();
+        gtsam::Pose3 latest_publish_pose_base_link =  latest_publish_pose_ * T_body_imu.inverse(); // this will be T_NED_body(base_link)
         geometry_msgs::TransformStamped pose_tf_msg;
         pose_tf_msg.header.stamp = dvl_msg->header.stamp;
         pose_tf_msg.header.frame_id = "NED_imu";
@@ -655,7 +659,7 @@ namespace pose_graph_backend
 
     }
 
-    void PosegraphBackendOnline::callbackBaro(const sensor_msgs::FluidPressureConstPtr& baro_msg)
+    void PosegraphBackendOnline::callbackBaro(const geometry_msgs::PoseWithCovarianceStampedConstPtr& baro_msg)
     {
         // if (is_rot_initialized_ == false)
         // {
@@ -706,8 +710,8 @@ namespace pose_graph_backend
 
             is_rot_initialized_ = true;
 
-            double depth = (baro_msg->fluid_pressure - posegraph_->params_->baro_atm_pressure_) * 100 / 9.81 / 997.0; // TODO: add this to params
-            first_depth_ = depth;
+            // double depth = (baro_msg->fluid_pressure - posegraph_->params_->baro_atm_pressure_) * 100 / 9.81 / 997.0; // TODO: add this to params
+            first_depth_ = baro_msg->pose.pose.position.z;
             std::cout << "First depth: " << first_depth_ << std::endl;
             return;
         }
@@ -717,7 +721,9 @@ namespace pose_graph_backend
         const std::lock_guard<std::mutex> lock(mtx_);
 
         // always add the latest barometer measurement to the graph
-        double depth = (baro_msg->fluid_pressure - posegraph_->params_->baro_atm_pressure_) * 100 / 9.81 / 997.0; // TODO: add this to params
+        // TODO: conver this into the imu frame for the consistency.
+        double depth = baro_msg->pose.pose.position.z;
+
         if (first_depth_ == 0.0)
         {
             first_depth_ = depth;
@@ -757,6 +763,12 @@ namespace pose_graph_backend
             new_kf_flag_ = true;
             cv_.notify_one();
         }
+                        // Calculate relative depth from first measurement
+        double relative_depth = depth - first_depth_;
+        gtsam::Pose3 T_SBa = gtsam::Pose3(posegraph_->T_SBa_);
+        double relative_depth_imu_frame = relative_depth + T_SBa.translation().z();
+        // Add barometer factor with the relative depth
+        posegraph_->addBarometricFactor(relative_depth_imu_frame, 0.1, posegraph_->index_);
     }
 
     void PosegraphBackendOnline::callbackDVLLocal(const geometry_msgs::PoseWithCovarianceStampedConstPtr& dvl_local_msg)

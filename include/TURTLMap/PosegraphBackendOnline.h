@@ -58,9 +58,8 @@ namespace pose_graph_backend
 
         // subscriber callback 
         void callbackIMU(const sensor_msgs::ImuConstPtr& imu_msg);
-        // void callbackDVL(const geometry_msgs::TwistWithCovarianceStampedConstPtr& dvl_msg);
-        void callbackDVL(const waterlinked_a50_ros_driver::DVLConstPtr& dvl_msg); // switch to use the official DVL msg
-        void callbackBaro(const sensor_msgs::FluidPressureConstPtr& baro_msg);
+        void callbackDVL(const geometry_msgs::TwistWithCovarianceStampedConstPtr& dvl_msg);
+        void callbackBaro(const geometry_msgs::PoseWithCovarianceStampedConstPtr& baro_msg);
         void callbackDVLLocal(const geometry_msgs::PoseWithCovarianceStampedConstPtr& dvl_local_msg);
         // TODO: orbslam subscriber callback
 

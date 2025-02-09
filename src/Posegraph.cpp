@@ -853,6 +853,10 @@ namespace pose_graph_backend
         T_SB_ = params_->extrinsics_.T_BS;
 
         T_W_WD_ = params_->extrinsics_.T_W_WD;
+
+        T_BS_ = params_->extrinsics_.T_BS;
+
+        T_SBa_ = params_->extrinsics_.T_SBa;
     }
 
     void AUVPoseGraph::addEstimateSimple(double dt, double noise)

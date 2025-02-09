@@ -71,6 +71,8 @@ namespace pose_graph_backend
         gtsam::Matrix44 T_SD_;   // sensor (IMU)to DVL affine transform
         gtsam::Matrix44 T_SB_;   // sensor (IMU)to robot center affine transform
         gtsam::Matrix44 T_W_WD_; // world to DVL world transform
+        gtsam::Matrix44 T_BS_;   // imu to body transform
+        gtsam::Matrix44 T_SBa_;  // imu to barometer transform
         // Previous
         gtsam::Pose3 prev_pose_;
         gtsam::Vector3 prev_vel_;
