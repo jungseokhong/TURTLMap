@@ -199,7 +199,7 @@ namespace pose_graph_backend
             // new_kf_flag_ = false;
             // add different factors to the graph
             if (posegraph_->index_ < 10000)
-            // TODO: check if this is the right way to do it
+            // TODO: check if this is the right way to do it, and is this necessary?
             posegraph_->addBarometricFactor(posegraph_->getDepthMeasurement(), 0.005, posegraph_->index_);
 
             // add IMU factor
@@ -802,6 +802,7 @@ namespace pose_graph_backend
             prev_dvl_local_pose_ = dvl_local_pose;
             // compute the relative T
             // gtsam::Pose3 T_sd = gtsam::Pose3(posegraph_->T_SD_)
+            // TODO: what does this do?
             T_w_wd_ = latest_publish_pose_ * gtsam::Pose3(posegraph_->T_SD_) * prev_dvl_local_pose_.inverse();
         }
         else
@@ -815,6 +816,7 @@ namespace pose_graph_backend
         gtsam::Pose3 dvl_pose = gtsam::Pose3(dvl_rot, gtsam::Point3(dvl_local_msg->pose.pose.position.x, dvl_local_msg->pose.pose.position.y, dvl_local_msg->pose.pose.position.z));
         gtsam::Pose3 d_pose = prev_dvl_local_pose_.inverse() * dvl_pose;
         posegraph_->addDvlPose(dvl_local_current_time, d_pose);
+        // TODO: is this T_w_D * T_D_S? 
         dvl_local_pose = T_w_wd_ * dvl_local_pose * gtsam::Pose3(posegraph_->T_SD_).inverse();
         // dvl_local_pose = gtsam::Pose3(dvl_local_pose.rotation(), gtsam::Point3(dvl_local_pose.translation().x(), dvl_local_pose.translation().y(), posegraph_->getDepthMeasurement()));
 
