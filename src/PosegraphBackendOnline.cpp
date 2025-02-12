@@ -232,11 +232,12 @@ namespace pose_graph_backend
                 // std::cout << "Using DVL V2 factor!" << std::endl;
                 posegraph_->addDvlFactorImuRot(); // use V2 dvl factor and slerp
             }
-            else
-            {
-                // c++ exception
-                throw std::runtime_error("Not implemented yet!");
-            }
+            // TODO: commented out for testing
+            // else
+            // {
+            //     // c++ exception
+            //     throw std::runtime_error("Not implemented yet!");
+            // }
             // Jingyu TODO: add IMU factor and visual factor
             
             if (posegraph_->index_ > 0)
