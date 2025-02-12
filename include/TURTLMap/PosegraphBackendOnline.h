@@ -89,7 +89,7 @@ namespace pose_graph_backend
 
         std::condition_variable cv_; // condition variable for the kf loop
 
-        bool is_using_dvl_v2_factor = true; // TODO: get this from config file
+        bool is_using_dvl_v2_factor = false; // TODO: get this from config file
 
         bool is_rot_initialized_ = false; // indicate if the
         gtsam::Rot3 imu_latest_rot_;

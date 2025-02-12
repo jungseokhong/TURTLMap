@@ -422,12 +422,14 @@ namespace pose_graph_backend
             posegraph_->pim_->integrateMeasurement(imu_acc,
                                                    imu_gyro,
                                                    posegraph_->params_->imu_params_.dt_imu);
-            pim_dvl_->integrateMeasurement(imu_acc,
-                                           imu_gyro,
-                                           posegraph_->params_->imu_params_.dt_imu);
+            // TODO: comment out for testing
+            // pim_dvl_->integrateMeasurement(imu_acc,
+            //                                imu_gyro,
+            //                                posegraph_->params_->imu_params_.dt_imu);
             imu_count_++;
             
-            if (imu_count_ >= 5)
+            if (false) // TODO: this is for testing the DVL factor
+            // if (imu_count_ >= 5)
             {
                 latest_imu_prop_state_ = pim_dvl_->predict(gtsam::NavState(latest_dvl_pose_,
                                                                         latest_dvl_pose_.rotation()*latest_dvl_vel_),
@@ -488,6 +490,7 @@ namespace pose_graph_backend
         // std::cout << "DVL callback thread id: " << std::this_thread::get_id() << std::endl;
         double dt_dvl;
         double dvl_current_time = dvl_msg->header.stamp.toSec();
+        // TODO: this puts dvl into the imu frame
         gtsam::Vector3 dvl_vel = posegraph_->T_SD_.block(0, 0, 3, 3) * 
                 gtsam::Vector3(dvl_msg->twist.twist.linear.x, dvl_msg->twist.twist.linear.y, dvl_msg->twist.twist.linear.z);
         // double fom = dvl_msg->fom;
