@@ -133,7 +133,8 @@ namespace pose_graph_backend
 
         // DVL local subscription
         // TODO: check if this is the right way to do it
-        // dvl_local_subscriber_ = nh_.subscribe(posegraph_->params_->sensor_topics_.dvl_local_position_topic, 1000, &PosegraphBackendOnline::callbackDVLLocal, this);
+        dvl_local_subscriber_ = nh_.subscribe(posegraph_->params_->sensor_topics_.dvl_local_position_topic, 1000, &PosegraphBackendOnline::callbackDVLLocal, this);
+        // dvl_local_subscriber_ = nh_.subscribe("/warpauv_3/filtered_odometry", 1000, &PosegraphBackendOnline::callbackDVLLocal, this);
 
         // async spinners
         // For Orin nano there are 6 cores
@@ -416,7 +417,6 @@ namespace pose_graph_backend
             gtsam::Vector3 imu_gyro = gtsam::Vector3(imu_msg->angular_velocity.x, imu_msg->angular_velocity.y, imu_msg->angular_velocity.z);
 
             imu_latest_rot_ = gtsam::Rot3(imu_msg->orientation.w, imu_msg->orientation.x, imu_msg->orientation.y, imu_msg->orientation.z);
-
             // deal with the pim
             // compute dt_imu
             posegraph_->pim_->integrateMeasurement(imu_acc,
@@ -456,8 +456,8 @@ namespace pose_graph_backend
                 gtsam::Pose3 latest_publish_pose_base_link = latest_pose * T_body_imu.inverse();
                 geometry_msgs::TransformStamped pose_tf_msg;
                 pose_tf_msg.header.stamp = imu_msg->header.stamp;
-                pose_tf_msg.header.frame_id = "NED_imu";
-                pose_tf_msg.child_frame_id = "base_link";
+                pose_tf_msg.header.frame_id = "world";
+                pose_tf_msg.child_frame_id = "body";
                 pose_tf_msg.transform.translation.x = latest_publish_pose_base_link.translation().x();
                 pose_tf_msg.transform.translation.y = latest_publish_pose_base_link.translation().y();
                 pose_tf_msg.transform.translation.z = latest_publish_pose_base_link.translation().z();
@@ -617,8 +617,8 @@ namespace pose_graph_backend
         gtsam::Pose3 latest_publish_pose_base_link =  latest_publish_pose_ * T_body_imu.inverse(); // this will be T_NED_body(base_link)
         geometry_msgs::TransformStamped pose_tf_msg;
         pose_tf_msg.header.stamp = dvl_msg->header.stamp;
-        pose_tf_msg.header.frame_id = "NED_imu";
-        pose_tf_msg.child_frame_id = "base_link";
+        pose_tf_msg.header.frame_id = "world";
+        pose_tf_msg.child_frame_id = "body";
         pose_tf_msg.transform.translation.x = latest_publish_pose_base_link.translation().x();
         pose_tf_msg.transform.translation.y = latest_publish_pose_base_link.translation().y();
         pose_tf_msg.transform.translation.z = latest_publish_pose_base_link.translation().z();
@@ -720,7 +720,7 @@ namespace pose_graph_backend
         }
 
 
-
+        
         const std::lock_guard<std::mutex> lock(mtx_);
 
         // always add the latest barometer measurement to the graph
@@ -774,7 +774,7 @@ namespace pose_graph_backend
         posegraph_->addBarometricFactor(relative_depth_imu_frame, 0.1, posegraph_->index_);
     }
 
-    void PosegraphBackendOnline::callbackDVLLocal(const geometry_msgs::PoseWithCovarianceStampedConstPtr& dvl_local_msg)
+    void PosegraphBackendOnline::callbackDVLLocal(const nav_msgs::OdometryConstPtr& dvl_local_msg)
     {
         // TODO: think about the need of keeping this
 
@@ -793,6 +793,9 @@ namespace pose_graph_backend
         
         gtsam::Pose3 dvl_local_pose = gtsam::Pose3(gtsam::Rot3(dvl_local_msg->pose.pose.orientation.w, dvl_local_msg->pose.pose.orientation.x, dvl_local_msg->pose.pose.orientation.y, dvl_local_msg->pose.pose.orientation.z), 
                 gtsam::Point3(dvl_local_msg->pose.pose.position.x, dvl_local_msg->pose.pose.position.y, dvl_local_msg->pose.pose.position.z));
+        gtsam::Pose3 T_body_imu = gtsam::Pose3(posegraph_->T_BS_);
+        dvl_local_pose = dvl_local_pose * T_body_imu;
+        
         if (prev_dvl_local_time_ == 0.0)
         {
             prev_dvl_local_time_ = dvl_local_current_time;
@@ -803,7 +806,7 @@ namespace pose_graph_backend
             // compute the relative T
             // gtsam::Pose3 T_sd = gtsam::Pose3(posegraph_->T_SD_)
             // TODO: what does this do?
-            T_w_wd_ = latest_publish_pose_ * gtsam::Pose3(posegraph_->T_SD_) * prev_dvl_local_pose_.inverse();
+            // T_w_wd_ = latest_publish_pose_ * gtsam::Pose3(posegraph_->T_SD_) * prev_dvl_local_pose_.inverse();
         }
         else
         {
@@ -814,15 +817,17 @@ namespace pose_graph_backend
         // Convert to rotation matrix
         gtsam::Rot3 dvl_rot = gtsam::Rot3(q.normalized().toRotationMatrix());
         gtsam::Pose3 dvl_pose = gtsam::Pose3(dvl_rot, gtsam::Point3(dvl_local_msg->pose.pose.position.x, dvl_local_msg->pose.pose.position.y, dvl_local_msg->pose.pose.position.z));
+        // gtsam::Pose3 T_body_imu = gtsam::Pose3(posegraph_->T_BS_);
+        // gtsam::Pose3 d_pose = prev_dvl_local_pose_ * T_body_imu;
         gtsam::Pose3 d_pose = prev_dvl_local_pose_.inverse() * dvl_pose;
         posegraph_->addDvlPose(dvl_local_current_time, d_pose);
         // TODO: is this T_w_D * T_D_S? 
-        dvl_local_pose = T_w_wd_ * dvl_local_pose * gtsam::Pose3(posegraph_->T_SD_).inverse();
+        // dvl_local_pose = T_w_wd_ * dvl_local_pose * gtsam::Pose3(posegraph_->T_SD_).inverse();
         // dvl_local_pose = gtsam::Pose3(dvl_local_pose.rotation(), gtsam::Point3(dvl_local_pose.translation().x(), dvl_local_pose.translation().y(), posegraph_->getDepthMeasurement()));
 
         
-        gtsam::Pose3 T_sensor_zed = gtsam::Pose3(gtsam::Rot3(-0.495, 0.498, -0.503, 0.503), gtsam::Point3(0.052, 0.006, 0.242));
-        dvl_local_pose = dvl_local_pose * T_sensor_zed.inverse();
+        // gtsam::Pose3 T_sensor_zed = gtsam::Pose3(gtsam::Rot3(-0.495, 0.498, -0.503, 0.503), gtsam::Point3(0.052, 0.006, 0.242));
+        // dvl_local_pose = dvl_local_pose * T_sensor_zed.inverse();
 
         geometry_msgs::PoseStamped dvl_local_pose_msg;
         dvl_local_pose_msg.header.stamp = dvl_local_msg->header.stamp;

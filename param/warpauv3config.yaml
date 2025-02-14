@@ -115,8 +115,8 @@ barometer_params:
 
 sensor_topics:
   dvl: "/warpauv_3/sensors/dvl_velocity"
-  dvl_local_position: "/warpauv_3/sensors/dvl_position"
-  imu: "/warpauv_3/sensors/icm20602_imu/imu_data"
+  dvl_local_position: "/warpauv_3/noapril_odom_raw"
+  imu: "/warpauv_3/sensors/primary_imu_data"
   left_cam: '/warpauv_3/cameras/downward/left/image_stream/h264'
   right_cam: '/warpauv_3/cameras/downward/right/image_stream/h264'
   sonar: "/ping_sonar/range"

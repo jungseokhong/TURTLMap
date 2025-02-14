@@ -17,6 +17,7 @@
 #include <nav_msgs/Path.h>
 #include <turtlmap/save_trajectory.h>
 #include <waterlinked_a50_ros_driver/DVL.h>
+#include <nav_msgs/Odometry.h>
 
 
 namespace pose_graph_backend
@@ -60,7 +61,7 @@ namespace pose_graph_backend
         void callbackIMU(const sensor_msgs::ImuConstPtr& imu_msg);
         void callbackDVL(const geometry_msgs::TwistWithCovarianceStampedConstPtr& dvl_msg);
         void callbackBaro(const geometry_msgs::PoseWithCovarianceStampedConstPtr& baro_msg);
-        void callbackDVLLocal(const geometry_msgs::PoseWithCovarianceStampedConstPtr& dvl_local_msg);
+        void callbackDVLLocal(const nav_msgs::OdometryConstPtr& dvl_local_msg);
         // TODO: orbslam subscriber callback
 
         // TODO: think about the strategy for publishing state

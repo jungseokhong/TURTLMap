@@ -593,7 +593,7 @@ namespace pose_graph_backend
             }
             
             // do pvm integration
-            integrated_rot_matrix = imu_prev_rot_.matrix().inverse() * imu_rot_list_[i].matrix();            
+            integrated_rot_matrix = imu_prev_rot_.matrix().inverse() * imu_rot_list_[i].matrix(); 
             // pvm_->integrateMeasurements(current_dvl_vels_[i], gtsam::Rot3(integrated_rot_matrix), dt_dvl);
             pvm_->integrateMeasurementsNoise(current_dvl_vels_[i], gtsam::Rot3(integrated_rot_matrix), dt_dvl, current_dvl_foms_[i]);
             integrated_pose_translation += integrated_rot_matrix.matrix() * current_dvl_vels_[i] * dt_dvl;
