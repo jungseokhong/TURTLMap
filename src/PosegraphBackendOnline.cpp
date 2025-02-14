@@ -188,9 +188,9 @@ namespace pose_graph_backend
             posegraph_->initial_->insert(gtsam::Symbol('d', posegraph_->index_), posegraph_->priorDvlBias_);
             // std::cout << "posegraph_->priorDvlBias_: " << posegraph_->priorDvlBias_ << std::endl;
             posegraph_->initial_->insert(gtsam::Symbol('b', posegraph_->index_), posegraph_->priorImuBias_);
-            posegraph_->smootherTimestamps[gtsam::Symbol('d', posegraph_->index_)] = time;
-            posegraph_->smootherTimestamps[gtsam::Symbol('b', posegraph_->index_)] = time;
-            posegraph_->smootherTimestamps[gtsam::Symbol('x', posegraph_->index_)] = time;
+            // posegraph_->smootherTimestamps[gtsam::Symbol('d', posegraph_->index_)] = time;
+            // posegraph_->smootherTimestamps[gtsam::Symbol('b', posegraph_->index_)] = time;
+            // posegraph_->smootherTimestamps[gtsam::Symbol('x', posegraph_->index_)] = time;
             // posegraph_->smootherTimestamps[gtsam::Symbol('d', posegraph_->index_)] = posegraph_->index_;
             // posegraph_->smootherTimestamps[gtsam::Symbol('b', posegraph_->index_)] = posegraph_->index_;
             // posegraph_->smootherTimestamps[gtsam::Symbol('x', posegraph_->index_)] = posegraph_->index_;
@@ -217,13 +217,13 @@ namespace pose_graph_backend
             if (posegraph_->index_ > 1)
             {
                 posegraph_->initial_->insert(gtsam::Symbol('v', posegraph_->index_), posegraph_->result_->at<gtsam::Vector3>(gtsam::Symbol('v', posegraph_->index_-1)));
-                posegraph_->smootherTimestamps[gtsam::Symbol('v', posegraph_->index_)] = time;
+                // posegraph_->smootherTimestamps[gtsam::Symbol('v', posegraph_->index_)] = time;
                 // posegraph_->smootherTimestamps[gtsam::Symbol('v', posegraph_->index_)] = posegraph_->index_;
             }
             else
             {
                 posegraph_->initial_->insert(gtsam::Symbol('v', posegraph_->index_), gtsam::Vector3(0, 0, 0));
-                posegraph_->smootherTimestamps[gtsam::Symbol('v', posegraph_->index_)] = time;
+                // posegraph_->smootherTimestamps[gtsam::Symbol('v', posegraph_->index_)] = time;
                 // posegraph_->smootherTimestamps[gtsam::Symbol('v', posegraph_->index_)] = posegraph_->index_;
             }
             
@@ -247,17 +247,20 @@ namespace pose_graph_backend
 
                 if (!posegraph_->params_->using_smoother_)
                 {
+                    double start_time = ros::Time::now().toSec();
                     posegraph_->optimizePoseGraph();
+                    double end_time = ros::Time::now().toSec();
+                    std::cout << "Batch Optimization time: " << end_time - start_time << std::endl;
                 }
-                else
-                {
-                    std::cout << "using smoother" << std::endl;
-                    // count the time needed
-                    // double start_time = ros::Time::now().toSec();
-                    posegraph_->optimizePoseGraphSmoother();
-                    // double end_time = ros::Time::now().toSec();
-                    // std::cout << "Smoother optimization time: " << end_time - start_time << std::endl;
-                }
+                // else
+                // {
+                //     std::cout << "using smoother" << std::endl;
+                //     // count the time needed
+                //     // double start_time = ros::Time::now().toSec();
+                //     posegraph_->optimizePoseGraphSmoother();
+                //     // double end_time = ros::Time::now().toSec();
+                //     // std::cout << "Smoother optimization time: " << end_time - start_time << std::endl;
+                // }
                 
                 // debug use
                 // posegraph_->pim_->print("after optimization pim: ");
@@ -698,13 +701,13 @@ namespace pose_graph_backend
             // initializePoseGraphFromImu
             posegraph_->initializePoseGraphFromImu(imu_rot); // current practice of initializing the pose graph with IMU
             current_kf_time_ = baro_msg->header.stamp.toSec();
-            if (posegraph_->params_->using_smoother_)
-            {
-                posegraph_->smootherTimestamps[gtsam::Symbol('x', posegraph_->index_)] = 0.0;
-                posegraph_->smootherTimestamps[gtsam::Symbol('v', posegraph_->index_)] = 0.0;
-                posegraph_->smootherTimestamps[gtsam::Symbol('b', posegraph_->index_)] = 0.0;
-                posegraph_->smootherTimestamps[gtsam::Symbol('d', posegraph_->index_)] = 0.0;
-            }
+            // if (posegraph_->params_->using_smoother_)
+            // {
+            //     posegraph_->smootherTimestamps[gtsam::Symbol('x', posegraph_->index_)] = 0.0;
+            //     posegraph_->smootherTimestamps[gtsam::Symbol('v', posegraph_->index_)] = 0.0;
+            //     posegraph_->smootherTimestamps[gtsam::Symbol('b', posegraph_->index_)] = 0.0;
+            //     posegraph_->smootherTimestamps[gtsam::Symbol('d', posegraph_->index_)] = 0.0;
+            // }
             first_kf_time_ = current_kf_time_;
             posegraph_->prev_kf_time_ = current_kf_time_;
             kf_timestamps_.push_back(current_kf_time_);
@@ -732,7 +735,7 @@ namespace pose_graph_backend
             first_depth_ = depth;
             std::cout << "First depth: " << first_depth_ << std::endl;
         }
-        posegraph_->setDepthMeasurement(depth - first_depth_);
+        posegraph_->setDepthMeasurement(depth);
 
         // TODO: due to low fps of baro msg we move KF check here
         double baro_current_time = baro_msg->header.stamp.toSec();
@@ -771,7 +774,7 @@ namespace pose_graph_backend
         gtsam::Pose3 T_SBa = gtsam::Pose3(posegraph_->T_SBa_);
         double relative_depth_imu_frame = relative_depth + T_SBa.translation().z();
         // Add barometer factor with the relative depth
-        posegraph_->addBarometricFactor(relative_depth_imu_frame, 0.1, posegraph_->index_);
+        // posegraph_->addBarometricFactor(relative_depth_imu_frame, 0.1, posegraph_->index_);
     }
 
     void PosegraphBackendOnline::callbackDVLLocal(const nav_msgs::OdometryConstPtr& dvl_local_msg)

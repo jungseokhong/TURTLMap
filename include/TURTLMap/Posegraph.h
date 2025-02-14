@@ -43,13 +43,13 @@ namespace pose_graph_backend
 
         int index_;
 
-        // addition of smoother
-        gtsam::ISAM2Params smootherParameters;
-        double smootherLag = 6.0;
-        // IncrementalFixedLagSmoother smootherISAM2;
-        gtsam::BatchFixedLagSmoother smootherISAM2;
-        FixedLagSmoother::KeyTimestampMap smootherTimestamps;
-        void optimizePoseGraphSmoother();
+        // // addition of smoother
+        // gtsam::ISAM2Params smootherParameters;
+        // double smootherLag = 6.0;
+        // // IncrementalFixedLagSmoother smootherISAM2;
+        // gtsam::BatchFixedLagSmoother smootherISAM2;
+        // FixedLagSmoother::KeyTimestampMap smootherTimestamps;
+        // void optimizePoseGraphSmoother();
 
 
         // GTSAM Related things

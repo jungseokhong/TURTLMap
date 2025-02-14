@@ -141,7 +141,7 @@ optimization_params:
 
 num_iters: 1000
 
-using_smoother: true
+using_smoother: false
 
 kf_gap_time: 1.0
 

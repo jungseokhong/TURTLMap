@@ -173,9 +173,9 @@ namespace pose_graph_backend
     AUVPoseGraph::AUVPoseGraph(std::string &config_file)
     {
         // addition of the smoother
-        smootherParameters.relinearizeThreshold = 0.01;
-        smootherParameters.relinearizeSkip = 1;
-        smootherISAM2 = gtsam::BatchFixedLagSmoother(smootherLag);
+        // smootherParameters.relinearizeThreshold = 0.01;
+        // smootherParameters.relinearizeSkip = 1;
+        // smootherISAM2 = gtsam::BatchFixedLagSmoother(smootherLag);
 
 
         graph = new gtsam::NonlinearFactorGraph();
@@ -929,70 +929,72 @@ namespace pose_graph_backend
         // Print results
         std::cout << "Initial Error = " << graph->error(*initial_) << std::endl;
         
+        // Copy solution back so next iteration starts from the current solution
         *initial_ = *result_;
 
-        std::cout << "Final Error = " << graph->error(*result_) << std::endl;
+        double final_error = graph->error(*result_);
+        std::cout << "Batch LM optimization done. Final error = " << final_error << std::endl;
     }
 
-    void AUVPoseGraph::optimizePoseGraphSmoother()
-    {
-        // use smootherISAM2 to optimize the graph
-        // graph->print("Initial Graph:\n");
-        // initial_->print("Initial Estimate:\n");
+    // void AUVPoseGraph::optimizePoseGraphSmoother()
+    // {
+    //     // use smootherISAM2 to optimize the graph
+    //     // graph->print("Initial Graph:\n");
+    //     // initial_->print("Initial Estimate:\n");
 
-        // print smootherTimestamps
-        // std::cout << "smootherTimestamps: " << std::endl;
-        // for (auto it = smootherTimestamps.begin(); it != smootherTimestamps.end(); ++it)
-        // {
-        //     std::cout << it->first << " " << it->second << std::endl;
-        // }
-        // initial_->print("Initial Estimate:\n");
-        gtsam::FactorIndices delete_slots;
-        smootherISAM2.update(*graph, *initial_, smootherTimestamps, delete_slots);
+    //     // print smootherTimestamps
+    //     // std::cout << "smootherTimestamps: " << std::endl;
+    //     // for (auto it = smootherTimestamps.begin(); it != smootherTimestamps.end(); ++it)
+    //     // {
+    //     //     std::cout << it->first << " " << it->second << std::endl;
+    //     // }
+    //     // initial_->print("Initial Estimate:\n");
+    //     gtsam::FactorIndices delete_slots;
+    //     // smootherISAM2.update(*graph, *initial_, smootherTimestamps, delete_slots);
         
-        // cout delete_slots
-        // for (auto it = delete_slots.begin(); it != delete_slots.end(); ++it)
-        // {
-        //     std::cout << "delete_slots: " << *it << std::endl;
-        // }
+    //     // cout delete_slots
+    //     // for (auto it = delete_slots.begin(); it != delete_slots.end(); ++it)
+    //     // {
+    //     //     std::cout << "delete_slots: " << *it << std::endl;
+    //     // }
 
-        // print everything inside the smootherISAM2
-        std::cout << "smootherISAM2: " << std::endl;
-        // smootherISAM2.print("smootherISAM2: ");
+    //     // print everything inside the smootherISAM2
+    //     // std::cout << "smootherISAM2: " << std::endl;
+    //     // smootherISAM2.print("smootherISAM2: ");
 
-        // for(const FixedLagSmoother::KeyTimestampMap::value_type& key_timestamp: smootherISAM2.timestamps()) {
-        // std::cout << "    Key: " << key_timestamp.first << "  Time: " << key_timestamp.second << std::endl;
-        // }
+    //     // for(const FixedLagSmoother::KeyTimestampMap::value_type& key_timestamp: smootherISAM2.timestamps()) {
+    //     // std::cout << "    Key: " << key_timestamp.first << "  Time: " << key_timestamp.second << std::endl;
+    //     // }
 
-        // print initial
-        // smootherISAM2.getFactors().print("smootherISAM2 factors: ");
-
-        
+    //     // print initial
+    //     // smootherISAM2.getFactors().print("smootherISAM2 factors: ");
 
         
 
-        // directly taken from the example
-        // for(size_t i = 1; i < 2; ++i) { // Optionally perform multiple iSAM2 iterations
-        //   smootherISAM2.update();}
         
-        // smootherISAM2.calculateEstimate<gtsam::Pose3>(index_).print("iSAM2 Estimate:");
-        *result_ = smootherISAM2.calculateEstimate();
 
-        // calculate error
-        double error = smootherISAM2.getFactors().error(*result_);
-        if (std::isnan(error))
-        {
-            std::cout << "Error is NaN" << std::endl;
-            assert(false);
-        }
-        std::cout << "Final Error = " << smootherISAM2.getFactors().error(*result_) << std::endl;
+    //     // directly taken from the example
+    //     // for(size_t i = 1; i < 2; ++i) { // Optionally perform multiple iSAM2 iterations
+    //     //   smootherISAM2.update();}
         
-        // result_->print("Final Estimate:\n");
-        smootherTimestamps.clear();
-        initial_->clear();
-        graph->resize(0);
+    //     // smootherISAM2.calculateEstimate<gtsam::Pose3>(index_).print("iSAM2 Estimate:");
+    //     *result_ = smootherISAM2.calculateEstimate();
 
-    }
+    //     // calculate error
+    //     double error = smootherISAM2.getFactors().error(*result_);
+    //     if (std::isnan(error))
+    //     {
+    //         std::cout << "Error is NaN" << std::endl;
+    //         assert(false);
+    //     }
+    //     std::cout << "Final Error = " << smootherISAM2.getFactors().error(*result_) << std::endl;
+        
+    //     // result_->print("Final Estimate:\n");
+    //     smootherTimestamps.clear();
+    //     initial_->clear();
+    //     graph->resize(0);
+
+    // }
     
 
     void AUVPoseGraph::addEstimateVisual(const std::vector<double> vertex)
